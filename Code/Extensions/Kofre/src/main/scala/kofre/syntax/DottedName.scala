@@ -5,6 +5,12 @@ import kofre.base.Defs.Id
 import kofre.time.Dots
 import kofre.dotted.{Dotted, DottedLattice}
 
+/**
+  * Stores a replicaID and a value with it's associated lamport clocks.
+  *
+  * @param replicaID
+  * @param anon the value with it's associated lamport clocks
+  */
 class DottedName[L](val replicaID: Defs.Id, val anon: Dotted[L]) {
   def map[B](f: L => B): DottedName[B] = new DottedName(replicaID, anon.map(f))
 }

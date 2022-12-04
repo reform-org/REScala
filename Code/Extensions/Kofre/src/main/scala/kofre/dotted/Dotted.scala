@@ -8,6 +8,12 @@ import kofre.time.{Dot, Dots}
 
 import scala.util.NotGiven
 
+/**
+  * Store a value with it's associated lamport clocks.
+  *
+  * @param store the value to store
+  * @param context the associated lamport clocks
+  */
 case class Dotted[A](store: A, context: Dots) {
   def map[B](f: A => B): Dotted[B]                 = Dotted(f(store), context)
   def named(id: kofre.base.Defs.Id): DottedName[A] = DottedName(id, this)

@@ -11,7 +11,13 @@ import kofre.dotted.{DotFun, Dotted}
   * If two concurrent write operations occur, the resulting LWW takes on the value of the write operation with the later timestamp.
   */
 object LWWRegisterInterface {
+
+  /** An LWW (Last Writer Wins) is a Delta CRDT modeling a register.
+  *
+  * If two concurrent write operations occur, the resulting LWW takes on the value of the write operation with the later timestamp.
+  */
   type LWWRegister[A] = MVRegisterInterface.MVRegister[TimedVal[A]]
+
   def empty[A]: LWWRegister[A] = DotFun.empty
 
   implicit class LWWRegisterSyntax[C, A](container: C)(using ArdtOpsContains[C, LWWRegister[A]])

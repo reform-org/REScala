@@ -6,9 +6,13 @@ import kofre.dotted.DottedDecompose
 import kofre.syntax.PermIdMutate.withID
 import kofre.syntax.{ArdtOpsContains, OpsSyntaxHelper, PermId, PermIdMutate, PermQuery}
 
+/** A PosNegCounter (Positive-Negative Counter) is a Delta CRDT modeling a counter.
+  *
+  * It is composed of two grow-only counters (see [[GCounterInterface]]) to enable both increments and decrements of the counter value.
+  */
 case class PosNegCounter(pos: GrowOnlyCounter, neg: GrowOnlyCounter) derives DecomposeLattice, Bottom
 
-/** A PNCounter (Positive-Negative Counter) is a Delta CRDT modeling a counter.
+/** A PosNegCounter (Positive-Negative Counter) is a Delta CRDT modeling a counter.
   *
   * It is composed of two grow-only counters (see [[GCounterInterface]]) to enable both increments and decrements of the counter value.
   */
