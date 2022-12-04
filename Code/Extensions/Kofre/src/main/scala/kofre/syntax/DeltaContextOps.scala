@@ -83,6 +83,13 @@ trait OpsSyntaxHelper[C, L](container: C) {
   final protected def current(using perm: QueryP): L                          = perm.query(container)
   final protected def replicaID(using perm: IdentifierP): Defs.Id             = perm.replicaId(container)
   extension [A](c: Dotted[A]) def inheritId(using IdentifierP): DottedName[A] = c.named(replicaID)
+
+  /**
+    * Returns the associated lamport clocks.
+    *
+    * @param perm
+    * @return the associated lamport clocks.
+    */
   final protected def context(using perm: CausalP): Dots                      = perm.context(container)
   extension (l: L)(using perm: MutationP) def mutator: C                      = perm.mutate(container, l)
   extension (l: Dotted[L])(using perm: CausalMutationP) def mutator: C        = perm.mutateContext(container, l)

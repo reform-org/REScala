@@ -23,7 +23,14 @@ case class Dotted[A](store: A, context: Dots) {
 object Dotted {
 
   def empty[A: Bottom]: Dotted[A] = Dotted(Bottom.empty[A], Dots.empty)
-  def apply[A](a: A): Dotted[A]   = Dotted(a, Dots.empty)
+
+  /**
+    * Store a value with it's associated lamport clocks (none at creation).
+    *
+    * @param a the value to store
+    * @return test
+    */
+  def apply[A](a: A): Dotted[A] = Dotted(a, Dots.empty)
 
   def latticeLift[L: DecomposeLattice: Bottom]: DecomposeLattice[Dotted[L]] = DecomposeLattice.derived
 

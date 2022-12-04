@@ -19,7 +19,15 @@ object DottedName {
 
   def empty[A: Bottom](replicaId: Defs.Id) = new DottedName(replicaId, Dotted(Bottom.empty[A], Dots.empty))
 
+  /**
+    * Stores a replicaID and a value with it's associated lamport clocks.
+    *
+    * @param replicaID
+    * @param inner the value with it's associated lamport clocks
+    * @return
+    */
   def apply[L](replicaID: Defs.Id, inner: Dotted[L]): DottedName[L] = new DottedName(replicaID, inner)
+
   def unapply[L](wnc: DottedName[L]): Some[(Defs.Id, Dotted[L])]    = Some((wnc.replicaID, wnc.anon))
 
   given permissions[L](using DecomposeLattice[Dotted[L]]): PermQuery[DottedName[L], L]
