@@ -6,6 +6,9 @@ import scala.util.Random
 object Defs {
   def genTimestamp(): Long = System.currentTimeMillis
 
+  /**
+    * Your replicaID.
+    */
   type Id = String
 
   type Time = Long
