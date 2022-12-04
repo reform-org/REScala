@@ -9,7 +9,7 @@ import kofre.time.{Dot, Dots}
 import scala.util.NotGiven
 
 /**
-  * Store a value with it's associated lamport clocks.
+  * A value with it's associated lamport clocks.
   *
   * @param store the value to store
   * @param context the associated lamport clocks
