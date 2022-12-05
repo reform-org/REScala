@@ -7,9 +7,9 @@ import kofre.time.{Dot, Dots}
 
 import scala.annotation.targetName
 
-/** The context describes dots that have been seen.
-  * The store describes which value is associated for a given dot.
-  * Dots that are removed from the store are considered deleted.
+/** The context describes lamport clocks that have been seen.
+  * The store describes which value is associated for a given lamport clock.
+  * Vector clocks that are removed from the store are considered deleted.
   * All others are merged as for normal maps.
   *
   * The delta CRDT paper calls this a DotFun
@@ -21,6 +21,13 @@ case class DotFun[A](repr: Map[Dot, A]) {
   export repr.{+ as _, repr as _, *}
 }
 
+/** The context describes lamport clocks that have been seen.
+  * The store describes which value is associated for a given lamport clock.
+  * Vector clocks that are removed from the store are considered deleted.
+  * All others are merged as for normal maps.
+  *
+  * The delta CRDT paper calls this a DotFun
+  */
 object DotFun {
 
   def empty[A]: DotFun[A] = DotFun(Map.empty)
