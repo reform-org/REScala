@@ -36,6 +36,7 @@ object Dotted {
 
   given syntaxPermissions[L](using DottedLattice[L]): PermCausalMutate[Dotted[L], L]
     with {
+    // this is super interesting
     override def mutateContext(c: Dotted[L], delta: Dotted[L]): Dotted[L] = c merge delta
     override def query(c: Dotted[L]): L                                   = c.store
     override def context(c: Dotted[L]): Dots                              = c.context

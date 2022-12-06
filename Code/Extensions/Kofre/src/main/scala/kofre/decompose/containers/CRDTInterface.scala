@@ -22,6 +22,8 @@ object CRDTInterface {
       override def replicaId(c: B): Id       = c.replicaID
       override def mutate(c: B, delta: L): B = c.applyDelta(DottedName(c.replicaID, Dotted(delta, Dots.empty)))
       override def query(c: B): L            = c.state.store
+
+      // this is interesting
       override def mutateContext(
           container: B,
           withContext: Dotted[L]

@@ -34,6 +34,8 @@ object DottedName {
     with PermId[DottedName[L]] with PermCausal[DottedName[L]] with PermCausalMutate[DottedName[L], L]
     with {
     override def replicaId(c: DottedName[L]): Id = c.replicaID
+
+    // this is interesting
     override def mutateContext(c: DottedName[L], delta: Dotted[L]): DottedName[L] =
       DottedName(c.replicaID, c.anon merge delta)
     override def query(c: DottedName[L]): L      = c.anon.store
