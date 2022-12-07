@@ -16,17 +16,13 @@ import scala.util.NotGiven
   * No matter the concrete container, they should all offer the same API to the underlying lattice.
   */
 
-@implicitNotFound("Requires query permission »${L}«\nfrom »${C}")
 trait PermQuery[C, L]:
   def query(c: C): L
   def focus[M](q: L => M): PermQuery[C, M] = (c: C) => q(PermQuery.this.query(c))
-@implicitNotFound("Requires mutation permission.\nUnsure to modify »${L}«\nwithin »${C}«")
+
 trait PermMutate[C, L] extends PermQuery[C, L]:
   def mutate(c: C, delta: L): C
 
-@implicitNotFound(
-  "Requires a replica ID.\nWhich seems unavailable in »${C}«\nMissing a container?"
-)
 trait PermId[C]:
   def replicaId(c: C): Id
 class FixedId[C](id: Id) extends PermId[C]:
@@ -41,9 +37,7 @@ trait PermCausal[C]:
 )
 trait PermCausalMutate[C, L] extends PermCausal[C], PermQuery[C, L]:
   def mutateContext(container: C, withContext: Dotted[L]): C
-@implicitNotFound(
-  "Requires query, id, and mutation permission.\nUnsure how to extract them from »${C}«\nto modify »${L}«"
-)
+
 trait PermIdMutate[C, L] extends PermId[C], PermMutate[C, L]
 
 object PermQuery:
@@ -93,7 +87,10 @@ trait OpsSyntaxHelper[C, L](container: C) {
   final protected def context(using perm: CausalP): Dots                      = perm.context(container)
 
   // this is super interesting
+  // maybe our focus uses the wrong of these two mutator implementions
   extension (l: L)(using perm: MutationP) def mutator: C                      = perm.mutate(container, l)
   extension (l: Dotted[L])(using perm: CausalMutationP) def mutator: C        = perm.mutateContext(container, l)
 
+  extension (l: L)(using perm: MutationP) def mutatorWithoutContext: C                      = perm.mutate(container, l)
+  extension (l: Dotted[L])(using perm: CausalMutationP) def mutatorWithContext: C        = perm.mutateContext(container, l)
 }
