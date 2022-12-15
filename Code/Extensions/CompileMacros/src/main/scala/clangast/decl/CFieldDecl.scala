@@ -1,4 +1,5 @@
 package clangast.decl
+
 import clangast.traversal.CASTMapper
 import clangast.types.CQualType
 
@@ -10,7 +11,7 @@ case class CFieldDecl(name: String, declaredType: CQualType) extends CValueDecl 
   override def textgen: String = s"${declaredType.textgen} $name;"
 
   override def toExpr(using Quotes): Expr[CFieldDecl] = {
-    val nameExpr = Expr(name)
+    val nameExpr         = Expr(name)
     val declaredTypeExpr = declaredType.toExpr
 
     '{ CFieldDecl($nameExpr, $declaredTypeExpr) }

@@ -2,15 +2,6 @@ import Dependencies._
 import Settings._
 import sbt.Def
 
-val commonSettings = commonCrossBuildVersions +: jitpackResolver +: {
-  scala.sys.env.get("re_scala_version") match {
-    case Some("211") => scalaVersion_211
-    case Some("212") => scalaVersion_212
-    case Some("213") => scalaVersion_213
-    case _           => scalaVersion_3
-  }
-}
-
 lazy val rescalaProject = project.in(file(".")).settings(noPublish).aggregate(
   examples,
   kofre.js,
@@ -25,14 +16,15 @@ lazy val rescalaProject = project.in(file(".")).settings(noPublish).aggregate(
   consoleReplication,
 )
 
-lazy val rescalaAll = project.in(file("Code")).settings(commonSettings, noPublish).aggregate(
+lazy val rescalaCore = project.in(file("Code")).settings(scalaFullCrossBuildSupport, noPublish).aggregate(
   rescala.js,
   rescala.jvm,
+  rescala.native,
 )
 
 lazy val rescala = crossProject(JVMPlatform, JSPlatform, NativePlatform).in(file("Code/Main"))
   .settings(
-    commonSettings,
+    scalaFullCrossBuildSupport,
     // scaladoc
     autoAPIMappings := true,
     Compile / doc / scalacOptions += "-groups",
@@ -41,6 +33,7 @@ lazy val rescala = crossProject(JVMPlatform, JSPlatform, NativePlatform).in(file
     Test / scalacOptions ~= (old => old.filter(_ != "-Xfatal-warnings")),
     publishSonatype,
     scalaReflectProvided,
+    jitpackResolver,
     libraryDependencies ++= Seq(
       sourcecode.value,
       reactiveStreams.value,
@@ -58,12 +51,12 @@ lazy val rescala = crossProject(JVMPlatform, JSPlatform, NativePlatform).in(file
 // Extensions
 
 lazy val reswing = project.in(file("Code/Extensions/RESwing"))
-  .settings(commonSettings, noPublish, libraryDependencies += scalaSwing.value)
+  .settings(scalaVersion_3, noPublish, libraryDependencies += scalaSwing.value)
   .dependsOn(rescala.jvm)
 
 lazy val rescalafx = project.in(file("Code/Extensions/javafx"))
   .dependsOn(rescala.jvm)
-  .settings(commonSettings, noPublish, scalaFxDependencies, fork := true)
+  .settings(scalaVersion_3, noPublish, scalaFxDependencies, fork := true)
 
 lazy val kofre = crossProject(JVMPlatform, JSPlatform, NativePlatform).crossType(CrossType.Pure)
   .in(file("Code/Extensions/Kofre"))
@@ -83,7 +76,7 @@ lazy val compileMacros = crossProject(JVMPlatform, JSPlatform, NativePlatform).c
 
 lazy val distributedFullmv = project.in(file("Code/Extensions/MultiversionDistributed/multiversion"))
   .settings(
-    commonSettings,
+    scalaVersion_3,
     noPublish,
     libraryDependencies ++= circeAll.value,
     libraryDependencies ++= Seq(
@@ -98,7 +91,7 @@ lazy val distributedFullmv = project.in(file("Code/Extensions/MultiversionDistri
 
 lazy val distributedFullMVExamples = project.in(file("Code/Extensions/MultiversionDistributed/examples"))
   .enablePlugins(JmhPlugin)
-  .settings(commonSettings, noPublish)
+  .settings(scalaVersion_3, noPublish)
   .dependsOn(distributedFullmv % "test->test")
   .dependsOn(distributedFullmv % "compile->test")
   .dependsOn(rescala.jvm % "test->test")
@@ -107,7 +100,7 @@ lazy val distributedFullMVExamples = project.in(file("Code/Extensions/Multiversi
 lazy val distributedFullMVBenchmarks = project.in(file("Code/Extensions/MultiversionDistributed/benchmarks"))
   .enablePlugins(JmhPlugin)
   .settings(
-    commonSettings,
+    scalaVersion_3,
     noPublish,
     (Compile / mainClass) := Some("org.openjdk.jmh.Main"),
   )
@@ -117,7 +110,7 @@ lazy val distributedFullMVBenchmarks = project.in(file("Code/Extensions/Multiver
 lazy val microbench = project.in(file("Code/Microbenchmarks"))
   .enablePlugins(JmhPlugin)
   .settings(
-    commonSettings,
+    scalaVersion_3,
     noPublish,
     // (Compile / mainClass) := Some("org.openjdk.jmh.Main"),
     libraryDependencies ++= circeAll.value ++ jsoniterScalaAll.value ++ List(
@@ -135,7 +128,7 @@ lazy val microbench = project.in(file("Code/Microbenchmarks"))
 lazy val examples = project.in(file("Code/Examples/examples"))
   .dependsOn(rescala.jvm, reswing)
   .settings(
-    commonSettings,
+    scalaVersion_3,
     noPublish,
     fork := true,
     libraryDependencies ++= Seq(
@@ -148,7 +141,7 @@ lazy val todolist = project.in(file("Code/Examples/Todolist"))
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(kofre.js, rescala.js)
   .settings(
-    commonSettings,
+    scalaVersion_3,
     noPublish,
     libraryDependencies ++= jsoniterScalaAll.value ++ Seq(
       scalatags.value,
@@ -158,9 +151,10 @@ lazy val todolist = project.in(file("Code/Examples/Todolist"))
     jsAcceptUnfairGlobalTasks,
     scalaJSUseMainModuleInitializer := true,
     TaskKey[File]("deploy", "generates a correct index.html for the todolist app") := {
-      val jspath     = (Compile / fastLinkJS/scalaJSLinkerOutputDirectory).value
+      val fastlink   = (Compile / fastLinkJS).value
+      val jspath     = (Compile / fastLinkJS / scalaJSLinkerOutputDirectory).value
       val bp         = baseDirectory.value.toPath
-      val tp       = target.value.toPath
+      val tp         = target.value.toPath
       val template   = IO.read(bp.resolve("index.template.html").toFile)
       val targetpath = tp.resolve("index.html").toFile
       IO.write(targetpath, template.replace("JSPATH", s"${jspath}/main.js"))
@@ -173,13 +167,13 @@ lazy val encryptedTodo = project.in(file("Code/Examples/EncryptedTodoFx"))
   .enablePlugins(JmhPlugin)
   .dependsOn(kofre.jvm)
   .settings(
-    commonSettings,
+    scalaVersion_3,
     noPublish,
     libraryDependencies ++= jsoniterScalaAll.value,
     scalaFxDependencies,
     fork := true,
     libraryDependencies ++= {
-      val jettyVersion = "11.0.12"
+      val jettyVersion = "11.0.13"
       Seq(
         "org.eclipse.jetty"           % "jetty-server"           % jettyVersion,
         "org.eclipse.jetty.websocket" % "websocket-jetty-api"    % jettyVersion,
