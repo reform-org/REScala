@@ -21,3 +21,5 @@ addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.1")
 
 // tooling
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.3")
+
+addSbtPlugin("ch.epfl.scala" % "sbt-bloop" % "1.5.6")
